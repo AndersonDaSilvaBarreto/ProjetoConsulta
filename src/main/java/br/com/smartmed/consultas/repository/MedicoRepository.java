@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface MedicoRepository extends JpaRepository<MedicoModel, Integer> {
     List<MedicoModel> findByNomeContaining(String pNome);
     Optional<MedicoModel> findByCrm(String pCrm);
+    boolean existsByCrm(String pCrm);
     Optional<MedicoModel> findByTelefone(String pTelefone);
     boolean existsByTelefone(String telefone);
     Optional<MedicoModel> findByEmail(String pEmail);

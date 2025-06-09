@@ -33,4 +33,6 @@ public class EspecialidadeModel {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, EspecialidadeDTO.class);
     }
+
+
 }

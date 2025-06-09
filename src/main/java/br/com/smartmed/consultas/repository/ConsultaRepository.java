@@ -9,7 +9,7 @@ import java.util.List;
 
 
 @Repository
-public interface ConsultaRepository extends JpaRepository<ConsultaModel, Integer> {
+public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
     List<ConsultaModel> findByDataHoraConsulta(LocalDateTime pDataHoraConsulta);
     List<ConsultaModel> findByStatus(String pStatus);
     List<ConsultaModel> findByPacienteID(int pPacienteID);
