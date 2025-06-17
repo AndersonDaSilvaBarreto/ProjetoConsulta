@@ -17,7 +17,7 @@ public class ConsultaService {
     private ConsultaRepository consultaRepository;
 
     @Transactional(readOnly = true)
-    public ConsultaDTO obterId(Long id) {
+    public ConsultaDTO obterPorId(Long id) {
         ConsultaModel consulta = consultaRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Consulta com ID " + id + " não encontrado."));
         return consulta.toDTO();
     }
