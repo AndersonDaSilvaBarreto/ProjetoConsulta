@@ -56,8 +56,11 @@ public class RecepcionistaModel {
     @Column(name = "ativo",nullable = false)
     private boolean ativo;
 
+    /*
     public RecepcionistaDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, RecepcionistaDTO.class);
     }
+
+     */
 }

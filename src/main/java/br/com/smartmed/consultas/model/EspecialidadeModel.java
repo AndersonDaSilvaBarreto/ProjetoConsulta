@@ -29,10 +29,13 @@ public class EspecialidadeModel {
     @Column(name = "descricao",length = 255)
     private String descricao;
 
+    /*
     public EspecialidadeDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, EspecialidadeDTO.class);
     }
+
+     */
 
 
 }

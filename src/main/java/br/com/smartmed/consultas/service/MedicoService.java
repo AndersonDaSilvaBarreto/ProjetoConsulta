@@ -5,6 +5,7 @@ import br.com.smartmed.consultas.exception.*;
 import br.com.smartmed.consultas.model.MedicoModel;
 import br.com.smartmed.consultas.repository.MedicoRepository;
 import br.com.smartmed.consultas.rest.dto.MedicoDTO;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,17 +17,19 @@ import java.util.stream.Collectors;
 public class MedicoService {
     @Autowired
     private MedicoRepository medicoRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Transactional(readOnly = true)
     public MedicoDTO obterPorId(int id) {
         MedicoModel medico = medicoRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Médico com id " + id + "não encontrado!"));
-        return medico.toDTO();
+        return modelMapper.map(medico, MedicoDTO.class);
     }
 
     @Transactional(readOnly = true)
     public List<MedicoDTO> obterTodos() {
         List<MedicoModel> medicos = medicoRepository.findAll();
-        return medicos.stream().map(medico -> medico.toDTO()).collect(Collectors.toList());
+        return medicos.stream().map(medico ->modelMapper.map(medico, MedicoDTO.class)).collect(Collectors.toList());
 
     }
     @Transactional
@@ -36,7 +39,7 @@ public class MedicoService {
             if(medicoRepository.existsByCrm(novoMedico.getCrm())) {
                 throw new ConstraintException("Já existe um médico com esse Crm" + novoMedico.getCrm() + "na base de dados");
             }
-            return medicoRepository.save(novoMedico).toDTO();
+            return modelMapper.map(medicoRepository.save(novoMedico), MedicoDTO.class);
 
         } catch (DataIntegrityException e) {
             throw new DataIntegrityException("Erro! Não foi possível salvar o médico " + novoMedico.getNome() + " !");
@@ -59,7 +62,7 @@ public class MedicoService {
            if(!medicoRepository.existsByCrm(medicoExistente.getCrm())) {
                throw new ConstraintException("O médico com esse Crm " + medicoExistente.getCrm() + "não existe na base dados!");
            }
-           return medicoRepository.save(medicoExistente).toDTO();
+           return modelMapper.map(medicoRepository.save(medicoExistente), MedicoDTO.class);
        } catch (DataIntegrityException e) {
            throw new DataIntegrityException("Erro! Não foi possível atualizar o médico " + medicoExistente.getNome() + " !");
        } catch (ConstraintException e) {

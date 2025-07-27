@@ -25,8 +25,11 @@ public class FormaPagamentoModel {
     @NotBlank(message = "A descrição é obrigatória")
     private String descricao;
 
+    /*
     public FormaPagamentoDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, FormaPagamentoDTO.class);
     }
+
+     */
 }

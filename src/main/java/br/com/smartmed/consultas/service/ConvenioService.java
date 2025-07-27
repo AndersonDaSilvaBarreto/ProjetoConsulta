@@ -4,6 +4,7 @@ import br.com.smartmed.consultas.exception.*;
 import br.com.smartmed.consultas.model.ConvenioModel;
 import br.com.smartmed.consultas.repository.ConvenioRepository;
 import br.com.smartmed.consultas.rest.dto.ConvenioDTO;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,17 +16,19 @@ import java.util.stream.Collectors;
 public class ConvenioService {
     @Autowired
     private ConvenioRepository convenioRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Transactional(readOnly = true)
     public ConvenioDTO obterPorId(int id) {
         ConvenioModel convenio = convenioRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Convenio com ID " + id + " não encontrado."));
-        return convenio.toDTO();
+        return modelMapper.map(convenio, ConvenioDTO.class);
     }
 
     @Transactional(readOnly = true)
     public List<ConvenioDTO> obterTodos() {
         List<ConvenioModel> convenios = convenioRepository.findAll();
-        return convenios.stream().map(convenio -> convenio.toDTO()).collect(Collectors.toList());
+        return convenios.stream().map(convenio -> modelMapper.map(convenio, ConvenioDTO.class)).collect(Collectors.toList());
     }
 
     @Transactional
@@ -35,7 +38,7 @@ public class ConvenioService {
             if (convenioRepository.existsByCnpj(novoConvenio.getCnpj())) {
                 throw new ConstraintException("Já existe um convenio com esse CNPJ " + novoConvenio.getCnpj() + " na base de dados!");
             }
-            return convenioRepository.save(novoConvenio).toDTO();
+            return modelMapper.map(convenioRepository.save(novoConvenio), ConvenioDTO.class);
         } catch (DataIntegrityException e) {
             throw new DataIntegrityException("Erro! Não foi possível salvar o convenio " + novoConvenio.getNome() + " !");
         } catch (ConstraintException e) {
@@ -58,7 +61,7 @@ public class ConvenioService {
             if(!convenioRepository.existsByCnpj(convenioExistente.getCnpj())) {
                 throw new ConstraintException("O convenio com esse CNPJ " + convenioExistente.getCnpj() + " não existe na base de dados!");
             }
-            return convenioRepository.save(convenioExistente).toDTO();
+            return modelMapper.map(convenioRepository.save(convenioExistente), ConvenioDTO.class);
         } catch (DataIntegrityException e) {
             throw new DataIntegrityException("Erro! Não foi possível atualizar o convenio " + convenioExistente.getNome() + " !");
         } catch (ConstraintException e) {

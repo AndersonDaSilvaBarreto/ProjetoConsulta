@@ -54,8 +54,11 @@ public class MedicoModel {
     @Column(name = "especialidadeID", nullable = false)
     private int especialidadeID;
 
+    /*
     public MedicoDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, MedicoDTO.class);
     }
+
+     */
 }

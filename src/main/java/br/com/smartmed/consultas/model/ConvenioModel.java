@@ -46,9 +46,12 @@ public class ConvenioModel {
     @Column(name = "ativo",nullable = false)
     private boolean ativo;
 
+    /*
     public ConvenioDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, ConvenioDTO.class);
     }
+
+     */
 
 }

@@ -57,10 +57,13 @@ public class ConsultaModel {
     @NotNull(message = "O identificador único de recepcionista não pode ser nulo!")
     private int recepcionistaID;
 
+    /*
     public ConsultaDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, ConsultaDTO.class);
     }
+
+     */
 
 
 }

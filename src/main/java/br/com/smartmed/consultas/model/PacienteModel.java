@@ -47,10 +47,13 @@ public class PacienteModel {
     @Column(name = "email", length = 64, nullable = true)
     @Email(message = "E-mail invalido")
     private String email;
-    
+
+    /*
     public PacienteDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, PacienteDTO.class);
     }
+
+     */
 
 }
