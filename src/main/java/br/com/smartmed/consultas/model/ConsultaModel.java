@@ -1,13 +1,12 @@
 package br.com.smartmed.consultas.model;
 
-import br.com.smartmed.consultas.rest.dto.ConsultaDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.modelmapper.ModelMapper;
+
 
 import java.time.LocalDateTime;
 
@@ -46,11 +45,9 @@ public class ConsultaModel {
     private int medicoID;
 
     @Column(name = "formaPagamentoID", nullable = true)
-    @NotNull(message = "O identificador único da forma de pagamento não pode ser nulo!")
     private int formaPagamentoID;
 
     @Column(name = "convenioID", nullable = true)
-    @NotNull(message = "O identificador único do convencio não pode ser nulo!")
     private int convenioID;
 
     @Column(name = "recepcionistaID", nullable = false)

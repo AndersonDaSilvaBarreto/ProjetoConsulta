@@ -1,7 +1,10 @@
 package br.com.smartmed.consultas.rest.dto;
 
+import lombok.Data;
+
 import java.time.LocalDateTime;
 
+@Data
 public class ConsultaDTO {
     private long id;
     private LocalDateTime dataHoraConsulta;
