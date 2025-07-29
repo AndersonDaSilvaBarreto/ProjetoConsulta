@@ -2,6 +2,8 @@ package br.com.smartmed.consultas.rest.controller;
 
 import br.com.smartmed.consultas.model.ConsultaModel;
 import br.com.smartmed.consultas.rest.dto.ConsultaDTO;
+import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoDTO;
+import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoInputDTO;
 import br.com.smartmed.consultas.service.ConsultaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/consulta")
+@RequestMapping("/consultas")
 public class ConsultaController {
     @Autowired
     private ConsultaService consultaService;
@@ -41,4 +43,12 @@ public class ConsultaController {
     public void deletar(@Valid @RequestBody ConsultaModel consultaExistente) {
         consultaService.deletar(consultaExistente);
     }
+    @PostMapping("/historico")
+    public ResponseEntity<List<ConsultaHistoricoDTO>> historico(@Valid @RequestBody ConsultaHistoricoInputDTO consultaHistoricoInputDTO) {
+        List<ConsultaHistoricoDTO> consultaHistoricoDTO = consultaService.buscarHistorico(consultaHistoricoInputDTO);
+        return ResponseEntity.ok(consultaHistoricoDTO);
+
+    }
+
+
 }

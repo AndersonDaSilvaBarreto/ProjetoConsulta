@@ -4,6 +4,8 @@ import br.com.smartmed.consultas.exception.*;
 import br.com.smartmed.consultas.model.ConsultaModel;
 import br.com.smartmed.consultas.repository.ConsultaRepository;
 import br.com.smartmed.consultas.rest.dto.ConsultaDTO;
+import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoDTO;
+import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoInputDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,4 +105,17 @@ public class ConsultaService {
             throw new ObjectNotFoundException("Erro! Não foi possível deletar a consulta" + consultaExistente.getId() + ". Não encontrado no banco de dados!");
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<ConsultaHistoricoDTO> buscarHistorico(ConsultaHistoricoInputDTO filtro) {
+        // A REGRA DE NEGÓCIO DO PACIENTE ATIVO CONTINUA SENDO RESPONSABILIDADE DO SERVICE
+        // if (pacienteRepository != null) { ... }
+
+        // Chama o repositório, que agora já retorna o DTO pronto!
+        return consultaRepository.buscarHistoricoComFiltros(filtro);
+    }
+
+    // O MÉTODO 'mapToHistoricoDTO' NÃO É MAIS NECESSÁRIO E PODE SER REMOVIDO.
 }
+
+
