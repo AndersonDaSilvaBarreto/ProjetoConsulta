@@ -48,6 +48,11 @@ public class PacienteModel {
     @Email(message = "E-mail invalido")
     private String email;
 
+    @Column(name = "status",length = 16,nullable = false)
+    @NotNull(message = "O status não pode ser nulo.")
+    @NotBlank(message = "O status é obrigatório!")
+    private String status;
+
     /*
     public PacienteDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();

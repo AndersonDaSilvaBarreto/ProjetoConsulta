@@ -108,14 +108,11 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public List<ConsultaHistoricoDTO> buscarHistorico(ConsultaHistoricoInputDTO filtro) {
-        // A REGRA DE NEGÓCIO DO PACIENTE ATIVO CONTINUA SENDO RESPONSABILIDADE DO SERVICE
-        // if (pacienteRepository != null) { ... }
-
-        // Chama o repositório, que agora já retorna o DTO pronto!
+        // Ele já retorna o DTO pronto, por isso não tá usando o map
         return consultaRepository.buscarHistoricoComFiltros(filtro);
     }
 
-    // O MÉTODO 'mapToHistoricoDTO' NÃO É MAIS NECESSÁRIO E PODE SER REMOVIDO.
+
 }
 
 

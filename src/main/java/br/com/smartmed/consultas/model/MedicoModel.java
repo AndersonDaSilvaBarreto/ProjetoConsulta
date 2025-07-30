@@ -1,7 +1,6 @@
 package br.com.smartmed.consultas.model;
 
 
-import br.com.smartmed.consultas.rest.dto.MedicoDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -10,7 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
-import org.modelmapper.ModelMapper;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -53,6 +55,10 @@ public class MedicoModel {
 
     @Column(name = "especialidadeID", nullable = false)
     private int especialidadeID;
+
+    @Transient
+    private Map<String, List<String>> agenda = new HashMap<>();
+
 
     /*
     public MedicoDTO toDTO() {

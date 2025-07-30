@@ -41,4 +41,5 @@ public class MedicoController {
     public void deletar(@Valid @RequestBody MedicoModel medicoExistente) {
         medicoService.deletar(medicoExistente);
     }
+
 }

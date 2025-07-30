@@ -23,16 +23,18 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
     List<ConsultaModel> findByRecepcionistaID(int pRecepcionistaID);
 
     @Query(value = "SELECT " +
-            "c.dataHoraConsulta," +
+            "c.dataHoraConsulta AS dataHora ," +
             "m.nome AS medico," +
             "e.nome AS especialidade, " +
             "c.valor, " +
             "c.status, " +
             "c.observacoes  " +
             "FROM consulta c " +
+            "JOIN paciente p ON c.pacienteID = p.id " +
             "JOIN medico m ON c.medicoID = m.id " +
-            "JOIN especialidade e ON m.especialidadeID = e.id  " +
+            "JOIN especialidade e ON m.especialidadeID = e.id " +
             "WHERE c.pacienteID = :#{#filtro.pacienteID} " +
+            "AND p.status = 'ativo'  " +
             "AND (:#{#filtro.dataInicio} IS NULL OR c.dataHoraConsulta >= :#{#filtro.dataInicio})  " +
             "AND (:#{#filtro.dataFim} IS NULL OR CAST(c.dataHoraConsulta AS DATE)  <= :#{#filtro.dataFim}) " +
             "AND (:#{#filtro.medicoID} IS NULL OR c.medicoID = :#{#filtro.medicoID}) " +
