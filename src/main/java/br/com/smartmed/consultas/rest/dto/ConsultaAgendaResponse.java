@@ -1,7 +1,10 @@
 package br.com.smartmed.consultas.rest.dto;
 
+import lombok.Data;
+
 import java.util.List;
 
+@Data
 public class ConsultaAgendaResponse {
     private String medico;
     private String data;

@@ -3,12 +3,16 @@ package br.com.smartmed.consultas.service;
 import br.com.smartmed.consultas.exception.*;
 import br.com.smartmed.consultas.model.RecepcionistaModel;
 import br.com.smartmed.consultas.repository.RecepcionistaRepository;
+import br.com.smartmed.consultas.rest.dto.PaginacaoRespostaDTO;
 import br.com.smartmed.consultas.rest.dto.RecepcionistaDTO;
+import br.com.smartmed.consultas.rest.dto.RecepcionistaRequestFiltros;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -101,4 +105,34 @@ public class RecepcionistaService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public PaginacaoRespostaDTO<RecepcionistaDTO> buscarComFiltros(RecepcionistaRequestFiltros filtro) {
+
+        Pageable pageable = PageRequest.of(filtro.getPagina(), filtro.getTamanhoPagina());
+
+
+        Boolean statusBooleano = null;
+        if (filtro.getStatus() != null && !filtro.getStatus().isBlank()) {
+            if ("ATIVO".equalsIgnoreCase(filtro.getStatus())) {
+                statusBooleano = true;
+            } else if ("INATIVO".equalsIgnoreCase(filtro.getStatus())) {
+                statusBooleano = false;
+            }
+
+        }
+
+        Page<RecepcionistaDTO> paginaDeDTOs = recepcionistaRepository.listagemDeRecepcionistasComFiltro(
+                statusBooleano,
+                filtro.getDataInicio(),
+                filtro.getDataFim(),
+                pageable
+        );
+        
+        return new PaginacaoRespostaDTO<>(
+                paginaDeDTOs.getContent(),
+                paginaDeDTOs.getTotalPages(),
+                paginaDeDTOs.getNumber()
+        );
+
+}
 }

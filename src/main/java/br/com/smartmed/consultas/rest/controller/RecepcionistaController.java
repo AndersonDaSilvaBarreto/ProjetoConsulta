@@ -1,7 +1,9 @@
 package br.com.smartmed.consultas.rest.controller;
 
 import br.com.smartmed.consultas.model.RecepcionistaModel;
+import br.com.smartmed.consultas.rest.dto.PaginacaoRespostaDTO;
 import br.com.smartmed.consultas.rest.dto.RecepcionistaDTO;
+import br.com.smartmed.consultas.rest.dto.RecepcionistaRequestFiltros;
 import br.com.smartmed.consultas.service.RecepcionistaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/recepcionista")
+@RequestMapping("api/recepcionistas")
 public class RecepcionistaController {
     @Autowired
     private RecepcionistaService recepcionistaService;
@@ -40,5 +42,10 @@ public class RecepcionistaController {
     @DeleteMapping()
     public void deletar(@Valid @RequestBody RecepcionistaModel recepcionistaExistente) {
         recepcionistaService.deletar(recepcionistaExistente);
+    }
+    @PostMapping("/filtrar")
+    public ResponseEntity<PaginacaoRespostaDTO<RecepcionistaDTO>> listagemDeRecepcionistasComFiltro(@Valid @RequestBody RecepcionistaRequestFiltros recepcionistaRequestFiltros) {
+        PaginacaoRespostaDTO<RecepcionistaDTO> resposta = recepcionistaService.buscarComFiltros(recepcionistaRequestFiltros);
+        return ResponseEntity.ok(resposta);
     }
 }
