@@ -1,10 +1,7 @@
 package br.com.smartmed.consultas.repository;
 
 import br.com.smartmed.consultas.model.ConsultaModel;
-import br.com.smartmed.consultas.rest.dto.ConsultaCancelamentoRequest;
-import br.com.smartmed.consultas.rest.dto.ConsultaCancelamentoResponse;
-import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoDTO;
-import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoInputDTO;
+import br.com.smartmed.consultas.rest.dto.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -56,4 +53,25 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
             """)
     void cancelamentoConsulta(@Param("consultaID") Long consultaId, @Param("motivo") String motivo);
 
+    @Query(value = """
+            SELECT NEW br.com.smartmed.consultas.rest.dto.RelatorioEspecialidadesResponse(
+            e.nome,
+            COUNT(c)
+            )
+            FROM ConsultaModel c
+            JOIN MedicoModel m ON c.medicoID = m.id
+            JOIN EspecialidadeModel e ON m.especialidadeID = e.id
+            WHERE 
+                c.status = 'REALIZADA' AND
+                c.dataHoraConsulta >= :dataInicio AND 
+                c.dataHoraConsulta < :dataFim
+                GROUP BY
+                    e.nome
+                ORDER BY
+                    COUNT(c) DESC
+            """)
+    List<RelatorioEspecialidadesResponse> findEspecialidadesMaisAtendidas(
+            @Param("dataInicio") LocalDateTime dataInicio,
+            @Param("dataFim") LocalDateTime dataFim
+    );
 }
