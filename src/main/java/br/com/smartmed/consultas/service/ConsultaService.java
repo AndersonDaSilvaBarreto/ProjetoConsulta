@@ -3,14 +3,13 @@ package br.com.smartmed.consultas.service;
 import br.com.smartmed.consultas.exception.*;
 import br.com.smartmed.consultas.model.ConsultaModel;
 import br.com.smartmed.consultas.repository.ConsultaRepository;
-import br.com.smartmed.consultas.rest.dto.ConsultaDTO;
-import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoDTO;
-import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoInputDTO;
+import br.com.smartmed.consultas.rest.dto.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -110,6 +109,29 @@ public class ConsultaService {
     public List<ConsultaHistoricoDTO> buscarHistorico(ConsultaHistoricoInputDTO filtro) {
         // Ele já retorna o DTO pronto, por isso não tá usando o map
         return consultaRepository.buscarHistoricoComFiltros(filtro);
+    }
+
+    @Transactional
+    public ConsultaCancelamentoResponse cancelar(ConsultaCancelamentoRequest request) {
+
+        if (request.getMotivo() == null || request.getMotivo().isBlank()) {
+            throw new IllegalArgumentException("O motivo do cancelamento é obrigatório.");
+        }
+
+        ConsultaModel consulta = consultaRepository.findById(request.getConsultaID())
+                .orElseThrow(() -> new RuntimeException("Consulta com ID " + request.getConsultaID() + " não encontrada."));
+
+        if (!"AGENDADA".equalsIgnoreCase(consulta.getStatus())) {
+            throw new RuntimeException("Apenas consultas com status 'AGENDADA' podem ser canceladas.");
+        }
+
+        if (consulta.getDataHoraConsulta().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Não é possível cancelar uma consulta que já ocorreu.");
+        }
+
+        consultaRepository.cancelamentoConsulta(consulta.getId(), request.getMotivo());
+
+        return new ConsultaCancelamentoResponse("Consulta cancelada com sucesso", "CANCELADA");
     }
 
 

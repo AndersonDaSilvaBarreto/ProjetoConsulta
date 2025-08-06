@@ -1,15 +1,19 @@
 package br.com.smartmed.consultas.repository;
 
 import br.com.smartmed.consultas.model.ConsultaModel;
+import br.com.smartmed.consultas.rest.dto.ConsultaCancelamentoRequest;
+import br.com.smartmed.consultas.rest.dto.ConsultaCancelamentoResponse;
 import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoDTO;
 import br.com.smartmed.consultas.rest.dto.ConsultaHistoricoInputDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -43,5 +47,13 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
             "ORDER BY c.dataHoraConsulta DESC ",
             nativeQuery = true )
     List<ConsultaHistoricoDTO> buscarHistoricoComFiltros(@Param("filtro") ConsultaHistoricoInputDTO filtro);
+
+    @Modifying
+    @Query(value = """
+            UPDATE ConsultaModel c
+            SET c.status = 'CANCELADA', c.observacoes = :motivo
+            WHERE c.id = :consultaID
+            """)
+    void cancelamentoConsulta(@Param("consultaID") Long consultaId, @Param("motivo") String motivo);
 
 }
