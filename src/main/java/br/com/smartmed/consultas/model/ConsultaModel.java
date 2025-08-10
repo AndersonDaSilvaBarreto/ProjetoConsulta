@@ -51,9 +51,8 @@ public class ConsultaModel {
     @Column(name = "convenioID", nullable = true)
     private int convenioID;
 
-    @Column(name = "recepcionistaID", nullable = false)
-    @NotNull(message = "O identificador único de recepcionista não pode ser nulo!")
-    private int recepcionistaID;
+    @Column(name = "recepcionistaID", nullable = true)
+    private Integer recepcionistaID;
 
     /*
     public ConsultaDTO toDTO() {

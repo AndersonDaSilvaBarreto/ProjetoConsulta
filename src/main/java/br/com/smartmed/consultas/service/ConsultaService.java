@@ -2,14 +2,20 @@ package br.com.smartmed.consultas.service;
 
 import br.com.smartmed.consultas.exception.*;
 import br.com.smartmed.consultas.model.ConsultaModel;
+import br.com.smartmed.consultas.model.MedicoModel;
 import br.com.smartmed.consultas.repository.ConsultaRepository;
+import br.com.smartmed.consultas.repository.MedicoRepository;
 import br.com.smartmed.consultas.rest.dto.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,7 +23,10 @@ import java.util.stream.Collectors;
 public class ConsultaService {
     @Autowired
     private ConsultaRepository consultaRepository;
-
+    @Autowired
+    private MedicoRepository medicoRepository;
+    @Autowired
+    private AgendaService agendaService;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -135,6 +144,65 @@ public class ConsultaService {
     }
 
 
+
+
+    public AgendarConsultaResponse agendarConsultaAutomatica(AgendarConsultaRequest request) {
+
+        if (request.getConvenioID() == null && request.getFormaPagamentoID() == null) {
+            throw new IllegalArgumentException("Informe um convênio ou uma forma de pagamento.");
+        }
+
+        List<MedicoModel> medicos = request.getEspecialidadeID() != null
+                ? medicoRepository.findByEspecialidadeID(request.getEspecialidadeID())
+                : medicoRepository.findAll();
+
+        for (MedicoModel medico : medicos) {
+            List<String> horariosPadrao = agendaService.gerarHorariosPadrao();
+
+            for (String horario : horariosPadrao) {
+                LocalTime hora = LocalTime.parse(horario);
+                LocalDateTime tentativa = LocalDateTime.of(request.getDataHoraInicial().toLocalDate(), hora);
+
+                if (tentativa.isBefore(request.getDataHoraInicial())) continue;
+
+                List<String> ocupados = medico.getAgenda().getOrDefault(tentativa.toLocalDate().toString(), List.of());
+
+                if (!ocupados.contains(hora.format(DateTimeFormatter.ofPattern("HH:mm")))) {
+
+                    medico.marcarConsulta(tentativa.toLocalDate().toString(), horario);
+
+                    BigDecimal valorConsulta = medico.getValorConsultaReferencia();
+                    if (request.getConvenioID() != null) {
+                        valorConsulta = valorConsulta.multiply(BigDecimal.valueOf(0.5));
+                    }
+
+                    ConsultaModel consulta = new ConsultaModel();
+                    consulta.setDataHoraConsulta(tentativa);
+                    consulta.setStatus("AGENDADA");
+                    consulta.setValor(valorConsulta);
+                    consulta.setObservacoes(null);
+                    consulta.setPacienteID(request.getPacienteID());
+                    consulta.setMedicoID(medico.getId());
+                    consulta.setFormaPagamentoID(request.getFormaPagamentoID() != null ? request.getFormaPagamentoID() : 0);
+                    consulta.setConvenioID(request.getConvenioID() != null ? request.getConvenioID() : 0);
+                    consulta.setRecepcionistaID(null);
+
+                    consultaRepository.save(consulta);
+
+                    return new AgendarConsultaResponse(
+                            consulta.getId(),
+                            consulta.getDataHoraConsulta(),
+                            consulta.getMedicoID(),
+                            consulta.getPacienteID(),
+                            consulta.getValor(),
+                            consulta.getStatus()
+                    );
+                }
+            }
+        }
+
+        throw new RuntimeException("Nenhum horário disponível encontrado.");
+    }
 
 
 }

@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +50,7 @@ public class MedicoModel {
     private String email;
 
     @Column(name = "valorConsultaReferencia",nullable = false)
-    private float valorConsultaReferencia;
+    private BigDecimal valorConsultaReferencia;
 
     @Column(name = "ativo",nullable = false)
     private boolean ativo;
@@ -59,6 +61,15 @@ public class MedicoModel {
     @Transient
     private Map<String, List<String>> agenda = new HashMap<>();
 
+    public boolean marcarConsulta(String data, String horario) {
+        List<String> horariosOcupados = agenda.getOrDefault(data, new ArrayList<>());
+        if (horariosOcupados.contains(horario)) {
+            return false;
+        }
+        horariosOcupados.add(horario);
+        agenda.put(data, horariosOcupados);
+        return true;
+    }
 
     /*
     public MedicoDTO toDTO() {

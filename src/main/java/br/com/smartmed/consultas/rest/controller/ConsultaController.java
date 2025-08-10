@@ -52,6 +52,11 @@ public class ConsultaController {
         ConsultaCancelamentoResponse consultaCancelamentoResponse = consultaService.cancelar(consultaCancelamentoRequest);
         return ResponseEntity.ok(consultaCancelamentoResponse);
     }
+    @PostMapping("/agendar-automatico")
+    public ResponseEntity<AgendarConsultaResponse> agendarConsultaAutomatico(@Valid @RequestBody AgendarConsultaRequest request) {
+        AgendarConsultaResponse response = consultaService.agendarConsultaAutomatica(request);
+        return ResponseEntity.ok(response);
+    }
 
 
 }
