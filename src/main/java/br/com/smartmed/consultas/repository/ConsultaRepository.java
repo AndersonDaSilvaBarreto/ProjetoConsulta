@@ -8,9 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+
 
 
 @Repository
@@ -71,6 +73,50 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
                     COUNT(c) DESC
             """)
     List<RelatorioEspecialidadesResponse> findEspecialidadesMaisAtendidas(
+            @Param("dataInicio") LocalDateTime dataInicio,
+            @Param("dataFim") LocalDateTime dataFim
+    );
+
+    @Query(value = """
+            SELECT NEW br.com.smartmed.consultas.rest.dto.FormaPagamentoFaturamentoDTO(
+            f.descricao,
+            SUM(c.valor)
+            )
+            FROM ConsultaModel c 
+            JOIN FormaPagamentoModel f ON c.formaPagamentoID = f.id
+            WHERE c.status = 'REALIZADA'
+            AND c.formaPagamentoID IS NOT NULL
+            AND c.dataHoraConsulta BETWEEN :dataInicio AND :dataFim
+            GROUP BY f.descricao
+            
+            """)
+    List<FormaPagamentoFaturamentoDTO> faturamentoPorFormaPagamento(
+            @Param("dataInicio") LocalDateTime dataInicio,
+            @Param("dataFim") LocalDateTime dataFim
+    );
+
+    @Query("""
+            SELECT NEW br.com.smartmed.consultas.rest.dto.ConvenioFaturamentoDTO(
+            co.nome,
+            SUM(c.valor)
+            )
+            FROM ConsultaModel c
+            JOIN ConvenioModel co ON c.convenioID = co.id
+            WHERE c.status = 'REALIZADA'
+            AND c.convenioID IS NOT NULL
+            AND c.dataHoraConsulta BETWEEN :dataInicio AND :dataFim
+            GROUP BY co.nome
+            """)
+    List<ConvenioFaturamentoDTO> faturamentoPorConvenio(
+            @Param("dataInicio") LocalDateTime dataInicio,
+            @Param("dataFim") LocalDateTime dataFim
+    );
+    @Query("""
+            SELECT SUM(c.valor)
+            FROM ConsultaModel c
+            WHERE c.status = 'REALIZADA' AND c.dataHoraConsulta BETWEEN :dataInicio AND :dataFim
+            """)
+    BigDecimal faturamentoTotal(
             @Param("dataInicio") LocalDateTime dataInicio,
             @Param("dataFim") LocalDateTime dataFim
     );
