@@ -46,10 +46,10 @@ public class ConsultaModel {
     private int medicoID;
 
     @Column(name = "formaPagamentoID", nullable = true)
-    private int formaPagamentoID;
+    private Integer formaPagamentoID;
 
     @Column(name = "convenioID", nullable = true)
-    private int convenioID;
+    private Integer convenioID;
 
     @Column(name = "recepcionistaID", nullable = true)
     private Integer recepcionistaID;

@@ -13,7 +13,7 @@ public class ConsultaDTO {
     private String observacoes;
     private int pacienteID;
     private int medicoID;
-    private int formaPagamentoID;
-    private int convenioID;
-    private int recepcionistaID;
+    private Integer formaPagamentoID;
+    private Integer convenioID;
+    private Integer recepcionistaID;
 }

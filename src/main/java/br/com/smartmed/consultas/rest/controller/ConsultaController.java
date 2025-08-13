@@ -58,5 +58,10 @@ public class ConsultaController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/reagendar")
+    public ResponseEntity<ReagendamentoDeConsultaResponse> reagendamentoDeConsulta(@Valid @RequestBody ReagendamentoDeConsultaRequest request) {
+        ReagendamentoDeConsultaResponse response = consultaService.reagendamentoDeConsulta(request);
+        return ResponseEntity.ok(response);
+    }
 
 }

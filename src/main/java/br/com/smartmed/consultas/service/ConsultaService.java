@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -202,6 +202,58 @@ public class ConsultaService {
         }
 
         throw new RuntimeException("Nenhum horário disponível encontrado.");
+    }
+
+    public ReagendamentoDeConsultaResponse reagendamentoDeConsulta(ReagendamentoDeConsultaRequest request) {
+
+        ConsultaModel consultaParaCancelar = consultaRepository
+                .findById(request.getConsultaID())
+                .orElseThrow(() -> new RuntimeException("Consulta não encontrada") );
+        //Verifica se a data é no passado
+        if(request.getNovaDataHora().isBefore(LocalDateTime.now().plusMinutes(1))) {
+            throw new RuntimeException("A consulta não pode ser marcada para uma data do passado");
+        }
+        //
+
+        //Verifica se médico tem horário disponível
+        MedicoModel medico = medicoRepository.findById(consultaParaCancelar.getMedicoID())
+                .orElseThrow(() -> new RuntimeException("Medico(a) não encontrado(a)") );
+        LocalDate novaData = request.getNovaDataHora().toLocalDate();
+        LocalTime novoHorario = request.getNovaDataHora().toLocalTime();
+
+        DateTimeFormatter formatadorDeData = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter formatadorDeHorario = DateTimeFormatter.ofPattern("HH:mm");
+
+        String dataString = novaData.format(formatadorDeData);
+        String horarioString = novoHorario.format(formatadorDeHorario);
+
+        boolean disponivel = medico.marcarConsulta(dataString, horarioString);
+        if(!disponivel) {
+            throw new RuntimeException("O médico não tem disponibilidade nesta nova data e horario");
+        }
+        //--
+        consultaRepository.cancelamentoConsulta(request.getConsultaID(), request.getMotivo());
+        ConsultaModel novaConsulta = new ConsultaModel();
+        novaConsulta.setPacienteID(consultaParaCancelar.getPacienteID());
+        novaConsulta.setMedicoID(consultaParaCancelar.getMedicoID());
+        novaConsulta.setRecepcionistaID(consultaParaCancelar.getRecepcionistaID());
+        novaConsulta.setValor(consultaParaCancelar.getValor());
+        novaConsulta.setStatus("AGENDADA");
+        novaConsulta.setDataHoraConsulta(request.getNovaDataHora());
+        novaConsulta.setFormaPagamentoID(consultaParaCancelar.getFormaPagamentoID());
+        novaConsulta.setConvenioID(consultaParaCancelar.getConvenioID());
+        novaConsulta.setObservacoes("Consulta remarcada por motivo de " + request.getMotivo());
+        consultaRepository.save(novaConsulta);
+
+        ReagendamentoDeConsultaResponse response = new ReagendamentoDeConsultaResponse();
+        response.setMensagem("Consulta reagendada com sucesso");
+        response.setNovaDataHora(novaConsulta.getDataHoraConsulta());
+
+        consultaParaCancelar.setObservacoes("Consulta reagendada para a data e horário " + request.getNovaDataHora());
+        atualizar(consultaParaCancelar);
+        return response;
+
+
     }
 
 
