@@ -24,7 +24,7 @@ public interface RecepcionistaRepository extends JpaRepository<RecepcionistaMode
     Optional<RecepcionistaModel> findByEmail(String pEmail);
     boolean existsByEmail(String email);
     List<RecepcionistaModel> findByAtivo(boolean pAtivo);
-
+    boolean existsByIdAndAtivoTrue(int id);
     @Query("""
         SELECT NEW br.com.smartmed.consultas.rest.dto.RecepcionistaDTO(
             r.nome,

@@ -5,6 +5,7 @@ import br.com.smartmed.consultas.model.ConsultaModel;
 import br.com.smartmed.consultas.model.MedicoModel;
 import br.com.smartmed.consultas.repository.ConsultaRepository;
 import br.com.smartmed.consultas.repository.MedicoRepository;
+import br.com.smartmed.consultas.repository.RecepcionistaRepository;
 import br.com.smartmed.consultas.rest.dto.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,8 @@ public class ConsultaService {
     private MedicoRepository medicoRepository;
     @Autowired
     private AgendaService agendaService;
+    @Autowired
+    private RecepcionistaRepository recepcionistaRepository;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -145,7 +148,7 @@ public class ConsultaService {
 
 
 
-
+    @Transactional
     public AgendarConsultaResponse agendarConsultaAutomatica(AgendarConsultaRequest request) {
 
         if (request.getConvenioID() == null && request.getFormaPagamentoID() == null) {
@@ -159,18 +162,16 @@ public class ConsultaService {
         for (MedicoModel medico : medicos) {
             List<String> horariosPadrao = agendaService.gerarHorariosPadrao();
 
-            for (String horario : horariosPadrao) {
-                LocalTime hora = LocalTime.parse(horario);
-                LocalDateTime tentativa = LocalDateTime.of(request.getDataHoraInicial().toLocalDate(), hora);
+            for (String horarioStr : horariosPadrao) {
+                LocalTime hora = LocalTime.parse(horarioStr);
+                LocalDate data = request.getDataHoraInicial().toLocalDate();
+                LocalDateTime tentativa = LocalDateTime.of(data, hora);
 
                 if (tentativa.isBefore(request.getDataHoraInicial())) continue;
 
-                List<String> ocupados = medico.getAgenda().getOrDefault(tentativa.toLocalDate().toString(), List.of());
+                boolean marcado = medico.marcarConsulta(data, hora, 30);
 
-                if (!ocupados.contains(hora.format(DateTimeFormatter.ofPattern("HH:mm")))) {
-
-                    medico.marcarConsulta(tentativa.toLocalDate().toString(), horario);
-
+                if (marcado) {
                     BigDecimal valorConsulta = medico.getValorConsultaReferencia();
                     if (request.getConvenioID() != null) {
                         valorConsulta = valorConsulta.multiply(BigDecimal.valueOf(0.5));
@@ -203,7 +204,7 @@ public class ConsultaService {
 
         throw new RuntimeException("Nenhum horário disponível encontrado.");
     }
-
+    @Transactional
     public ReagendamentoDeConsultaResponse reagendamentoDeConsulta(ReagendamentoDeConsultaRequest request) {
 
         ConsultaModel consultaParaCancelar = consultaRepository
@@ -221,13 +222,7 @@ public class ConsultaService {
         LocalDate novaData = request.getNovaDataHora().toLocalDate();
         LocalTime novoHorario = request.getNovaDataHora().toLocalTime();
 
-        DateTimeFormatter formatadorDeData = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        DateTimeFormatter formatadorDeHorario = DateTimeFormatter.ofPattern("HH:mm");
-
-        String dataString = novaData.format(formatadorDeData);
-        String horarioString = novoHorario.format(formatadorDeHorario);
-
-        boolean disponivel = medico.marcarConsulta(dataString, horarioString);
+        boolean disponivel = medico.marcarConsulta(novaData, novoHorario, 30);
         if(!disponivel) {
             throw new RuntimeException("O médico não tem disponibilidade nesta nova data e horario");
         }
@@ -255,7 +250,50 @@ public class ConsultaService {
 
 
     }
+    @Transactional
+    public CadastrarConsultaRecepcionistaResponse cadastrarConsultaPorRecepcionista(CadastrarConsultaRecepcionistaRequest request) {
+        if(recepcionistaRepository.existsById(request.getRecepcionistaID())) {
+            throw new RuntimeException("O recepcionista não existe!");
+        }
+        if(recepcionistaRepository.existsByIdAndAtivoTrue(request.getRecepcionistaID())) {
+            throw new RuntimeException("O recepcionista não está ativo!");
+        }
+        MedicoModel medico = medicoRepository.findById(request.getMedicoID())
+                .orElseThrow(() -> new RuntimeException("Medico(a) não encontrado(a)") );
 
+        LocalDate data = request.getDataHora().toLocalDate();
+        LocalTime hora = request.getDataHora().toLocalTime();
+        boolean disponivel = medico.marcarConsulta(data,hora, request.getDuracaoMinutos());
+        if(!disponivel) {
+            throw new RuntimeException("O médico não tem disponibilidade nesta nova data e horario");
+        }
+
+        ConsultaModel novaConsulta = new ConsultaModel();
+        novaConsulta.setDataHoraConsulta(request.getDataHora());
+        novaConsulta.setPacienteID(request.getPacienteID());
+        novaConsulta.setMedicoID(request.getMedicoID());
+        novaConsulta.setConvenioID(request.getConvenioID());
+        novaConsulta.setFormaPagamentoID(request.getFormaPagamentoID());
+        novaConsulta.setRecepcionistaID(request.getRecepcionistaID());
+        novaConsulta.setStatus("AGENDADA");
+        if(request.getConvenioID() != null) {
+            novaConsulta.setValor(
+                    medico.getValorConsultaReferencia()
+                            .multiply(BigDecimal.valueOf(0.5))
+                            .setScale(2, RoundingMode.HALF_UP)
+            );
+
+        }else {
+            novaConsulta.setValor(
+                    medico.getValorConsultaReferencia()
+            );
+        }
+        consultaRepository.save(novaConsulta);
+        CadastrarConsultaRecepcionistaResponse response = new CadastrarConsultaRecepcionistaResponse();
+        response.setMensagem("Consulta agendada com sucesso");
+        response.setStatus(novaConsulta.getStatus());
+        return response;
+    }
 
 }
 

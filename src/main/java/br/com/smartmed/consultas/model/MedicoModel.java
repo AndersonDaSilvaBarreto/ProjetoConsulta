@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,15 +64,33 @@ public class MedicoModel {
     @Transient
     private Map<String, List<String>> agenda = new HashMap<>();
 
-    public boolean marcarConsulta(String data, String horario) {
-        List<String> horariosOcupados = agenda.getOrDefault(data, new ArrayList<>());
-        if (horariosOcupados.contains(horario)) {
-            return false;
+    public boolean marcarConsulta(LocalDate data, LocalTime horaInicio, int duracaoMinutos) {
+        // Converter data para string no formato yyyy-MM-dd para usar como chave
+        String dataStr = data.toString();
+        List<String> horariosOcupados = agenda.getOrDefault(dataStr, new ArrayList<>());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        LocalTime horaFim = horaInicio.plusMinutes(duracaoMinutos);
+
+        // Verificar conflitos de horários já ocupados
+        for (String h : horariosOcupados) {
+            LocalTime ocupado = LocalTime.parse(h, formatter);
+            if (!ocupado.isBefore(horaInicio) && ocupado.isBefore(horaFim)) {
+                return false; // conflito encontrado
+            }
         }
-        horariosOcupados.add(horario);
-        agenda.put(data, horariosOcupados);
+
+        // Adicionar blocos de 10 minutos na agenda
+        LocalTime temp = horaInicio;
+        while (!temp.isAfter(horaFim.minusMinutes(1))) {
+            horariosOcupados.add(temp.format(formatter));
+            temp = temp.plusMinutes(10);
+        }
+
+        agenda.put(dataStr, horariosOcupados);
         return true;
     }
+
 
     /*
     public MedicoDTO toDTO() {

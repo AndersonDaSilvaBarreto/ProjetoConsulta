@@ -63,5 +63,10 @@ public class ConsultaController {
         ReagendamentoDeConsultaResponse response = consultaService.reagendamentoDeConsulta(request);
         return ResponseEntity.ok(response);
     }
-
+    @PostMapping("/cadastrar")
+    public ResponseEntity<CadastrarConsultaRecepcionistaResponse> cadastrarConsultaPorRecepcionista(
+            CadastrarConsultaRecepcionistaRequest request){
+        CadastrarConsultaRecepcionistaResponse response = consultaService.cadastrarConsultaPorRecepcionista(request);
+        return ResponseEntity.ok(response);
+    }
 }
