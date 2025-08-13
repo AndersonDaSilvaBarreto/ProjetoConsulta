@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ReagendamentoDeConsultaRequest {
     @NotNull(message = "O id da consulta não pode ser nulo")
-    long consultaID;
+    private long consultaID;
     @NotNull(message = "Não pode ser nula a nova data e hora")
-    LocalDateTime novaDataHora;
+    private LocalDateTime novaDataHora;
     String motivo;
 }

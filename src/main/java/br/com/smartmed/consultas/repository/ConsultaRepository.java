@@ -119,4 +119,16 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
             @Param("dataInicio") LocalDateTime dataInicio,
             @Param("dataFim") LocalDateTime dataFim
     );
+    @Query("SELECT NEW br.com.smartmed.consultas.rest.dto.RankingMedicosResponse(m.nome, COUNT(c)) " +
+            "FROM ConsultaModel c " +
+            "JOIN MedicoModel m ON c.medicoID = m.id " +
+            "WHERE c.status = 'REALIZADA' " +
+            "AND MONTH(c.dataHoraConsulta) = :mes " +
+            "AND YEAR(c.dataHoraConsulta) = :ano " +
+            "GROUP BY m.nome " +
+            "ORDER BY COUNT(c) DESC")
+    List<RankingMedicosResponse> findMedicosMaisAtivos(
+            @Param("mes") int mes,
+            @Param("ano") int ano
+    );
 }

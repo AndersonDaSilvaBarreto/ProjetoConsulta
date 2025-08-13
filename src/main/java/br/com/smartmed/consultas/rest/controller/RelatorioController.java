@@ -1,9 +1,6 @@
 package br.com.smartmed.consultas.rest.controller;
 
-import br.com.smartmed.consultas.rest.dto.RelatorioEspecialidadesRequest;
-import br.com.smartmed.consultas.rest.dto.RelatorioEspecialidadesResponse;
-import br.com.smartmed.consultas.rest.dto.RelatorioFaturamentoPorPeriodoRequestDTO;
-import br.com.smartmed.consultas.rest.dto.RelatorioFaturamentoPorPeriodoResponseDTO;
+import br.com.smartmed.consultas.rest.dto.*;
 import br.com.smartmed.consultas.service.RelatorioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +39,10 @@ public class RelatorioController {
         return ResponseEntity.ok(relatorio);
     }
 
+    @PostMapping("/medicos-mais-ativos")
+    public ResponseEntity<List<RankingMedicosResponse>> gerarRelatorioRankingMedicos(@Valid @RequestBody RankingMedicosRequest request) {
+        List<RankingMedicosResponse> response = relatoriosService.gerarRelatorioRankingMedicos(request);
+        return ResponseEntity.ok(response);
+    }
 
 }

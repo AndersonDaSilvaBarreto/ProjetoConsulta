@@ -45,4 +45,8 @@ public class RelatorioService {
         return consultaRepository.findEspecialidadesMaisAtendidas(dataInicio,dataFim);
 
     }
+    public List<RankingMedicosResponse> gerarRelatorioRankingMedicos(RankingMedicosRequest request) {
+        List<RankingMedicosResponse> response = consultaRepository.findMedicosMaisAtivos(request.getMes(), request.getAno());
+        return response;
+    }
 }

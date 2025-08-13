@@ -4,12 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReagendamentoDeConsultaResponse {
-    private String mensagem;
-    private LocalDateTime novaDataHora;
+public class RankingMedicosResponse {
+    private String medico;
+    private Long quantidadeConsultas;
 }
