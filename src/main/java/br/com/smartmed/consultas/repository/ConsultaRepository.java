@@ -62,9 +62,9 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
             FROM ConsultaModel c
             JOIN MedicoModel m ON c.medicoID = m.id
             JOIN EspecialidadeModel e ON m.especialidadeID = e.id
-            WHERE 
+            WHERE
                 c.status = 'REALIZADA' AND
-                c.dataHoraConsulta >= :dataInicio AND 
+                c.dataHoraConsulta >= :dataInicio AND
                 c.dataHoraConsulta < :dataFim
                 GROUP BY
                     e.nome
@@ -81,13 +81,12 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
             f.descricao,
             SUM(c.valor)
             )
-            FROM ConsultaModel c 
+            FROM ConsultaModel c
             JOIN FormaPagamentoModel f ON c.formaPagamentoID = f.id
             WHERE c.status = 'REALIZADA'
             AND c.formaPagamentoID IS NOT NULL
             AND c.dataHoraConsulta BETWEEN :dataInicio AND :dataFim
             GROUP BY f.descricao
-            
             """)
     List<FormaPagamentoFaturamentoDTO> faturamentoPorFormaPagamento(
             @Param("dataInicio") LocalDateTime dataInicio,

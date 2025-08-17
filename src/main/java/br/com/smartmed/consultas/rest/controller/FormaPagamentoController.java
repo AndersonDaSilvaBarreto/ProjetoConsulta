@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/formaPagamento")
+@RequestMapping("api/formaPagamento")
 public class FormaPagamentoController {
     @Autowired
     private FormaPagamentoService formaPagamentoService;

@@ -228,16 +228,7 @@ public class ConsultaService {
         }
         //--
         consultaRepository.cancelamentoConsulta(request.getConsultaID(), request.getMotivo());
-        ConsultaModel novaConsulta = new ConsultaModel();
-        novaConsulta.setPacienteID(consultaParaCancelar.getPacienteID());
-        novaConsulta.setMedicoID(consultaParaCancelar.getMedicoID());
-        novaConsulta.setRecepcionistaID(consultaParaCancelar.getRecepcionistaID());
-        novaConsulta.setValor(consultaParaCancelar.getValor());
-        novaConsulta.setStatus("AGENDADA");
-        novaConsulta.setDataHoraConsulta(request.getNovaDataHora());
-        novaConsulta.setFormaPagamentoID(consultaParaCancelar.getFormaPagamentoID());
-        novaConsulta.setConvenioID(consultaParaCancelar.getConvenioID());
-        novaConsulta.setObservacoes("Consulta remarcada por motivo de " + request.getMotivo());
+        ConsultaModel novaConsulta = getConsultaModel(request, consultaParaCancelar);
         consultaRepository.save(novaConsulta);
 
         ReagendamentoDeConsultaResponse response = new ReagendamentoDeConsultaResponse();
@@ -250,11 +241,30 @@ public class ConsultaService {
 
 
     }
+
+    private static ConsultaModel getConsultaModel(
+            ReagendamentoDeConsultaRequest request, ConsultaModel consultaParaCancelar) {
+        ConsultaModel novaConsulta = new ConsultaModel();
+        novaConsulta.setPacienteID(consultaParaCancelar.getPacienteID());
+        novaConsulta.setMedicoID(consultaParaCancelar.getMedicoID());
+        novaConsulta.setRecepcionistaID(consultaParaCancelar.getRecepcionistaID());
+        novaConsulta.setValor(consultaParaCancelar.getValor());
+        novaConsulta.setStatus("AGENDADA");
+        novaConsulta.setDataHoraConsulta(request.getNovaDataHora());
+        novaConsulta.setFormaPagamentoID(consultaParaCancelar.getFormaPagamentoID());
+        novaConsulta.setConvenioID(consultaParaCancelar.getConvenioID());
+        novaConsulta.setObservacoes("Consulta remarcada por motivo de " + request.getMotivo());
+        return novaConsulta;
+    }
+
     @Transactional
-    public CadastrarConsultaRecepcionistaResponse cadastrarConsultaPorRecepcionista(CadastrarConsultaRecepcionistaRequest request) {
+    public CadastrarConsultaRecepcionistaResponse cadastrarConsultaPorRecepcionista(
+            CadastrarConsultaRecepcionistaRequest request) {
+        // Verifica se o recepcionista existe
         if(recepcionistaRepository.existsById(request.getRecepcionistaID())) {
             throw new RuntimeException("O recepcionista não existe!");
         }
+        // Verifica se o recepcionista está ativo
         if(recepcionistaRepository.existsByIdAndAtivoTrue(request.getRecepcionistaID())) {
             throw new RuntimeException("O recepcionista não está ativo!");
         }
@@ -266,6 +276,9 @@ public class ConsultaService {
         boolean disponivel = medico.marcarConsulta(data,hora, request.getDuracaoMinutos());
         if(!disponivel) {
             throw new RuntimeException("O médico não tem disponibilidade nesta nova data e horario");
+        }
+        if (request.getConvenioID() == null && request.getFormaPagamentoID() == null) {
+            throw new RuntimeException("Informe um convênio ou uma forma de pagamento.");
         }
 
         ConsultaModel novaConsulta = new ConsultaModel();

@@ -15,7 +15,7 @@ import java.util.List;
  * Controlador responsável por gerenciar as operações relacionadas aos pacientes.
  */
 @RestController
-@RequestMapping("/paciente")
+@RequestMapping("api/paciente")
 public class PacienteController {
 
     /**

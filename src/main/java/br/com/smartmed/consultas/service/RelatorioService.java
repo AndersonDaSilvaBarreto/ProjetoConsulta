@@ -1,5 +1,6 @@
 package br.com.smartmed.consultas.service;
 
+import br.com.smartmed.consultas.exception.ConstraintException;
 import br.com.smartmed.consultas.repository.ConsultaRepository;
 import br.com.smartmed.consultas.rest.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class RelatorioService {
         LocalDate dataFimDate = requestDTO.getDataFim();
 
         if(dataInicioDate.isAfter(dataFimDate)) {
-            throw new IllegalArgumentException("A data de início não pode ser posterior à data de fim.");
+          throw new ConstraintException("A data de início não pode ser posterior à data de fim.");
         }
         LocalDateTime dataInicio = dataInicioDate.atStartOfDay();
         LocalDateTime dataFim = dataFimDate.atTime(LocalTime.MAX);
