@@ -24,7 +24,7 @@ public class UsuarioModel {
     @Column(name = "nome")
     private String nome;
 
-    @Column(name = "email", length = 64, nullable = false)
+    @Column(name = "email", length = 64, nullable = false, unique = true)
     @Email(message = "E-mail invalido")
     @NotNull(message = "O email não pode ser nulo!")
     @NotBlank(message = "O email não pode ser vazio!")

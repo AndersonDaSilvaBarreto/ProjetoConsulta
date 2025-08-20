@@ -1,5 +1,6 @@
 package br.com.smartmed.consultas.repository;
 
+import br.com.smartmed.consultas.model.EspecialidadeModel;
 import br.com.smartmed.consultas.model.MedicoModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,6 @@ public interface MedicoRepository extends JpaRepository<MedicoModel, Integer> {
     Optional<MedicoModel> findByEmail(String pEmail);
     boolean existsByEmail(String email);
     List<MedicoModel> findByAtivo(boolean pAtivo);
-    List<MedicoModel> findByEspecialidadeID(int pEspecialidadeID);
+    List<MedicoModel> findByEspecialidade(EspecialidadeModel pEspecialidade);
 
 }

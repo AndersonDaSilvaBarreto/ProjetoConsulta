@@ -1,6 +1,6 @@
 package br.com.smartmed.consultas.repository;
 
-import br.com.smartmed.consultas.model.ConsultaModel;
+import br.com.smartmed.consultas.model.*;
 import br.com.smartmed.consultas.rest.dto.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -18,16 +18,16 @@ import java.util.List;
 public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
     List<ConsultaModel> findByDataHoraConsulta(LocalDateTime pDataHoraConsulta);
     List<ConsultaModel> findByStatus(String pStatus);
-    List<ConsultaModel> findByPacienteID(int pPacienteID);
-    List<ConsultaModel> findByMedicoID(int pMedicoID);
-    List<ConsultaModel> findByFormaPagamentoID(int pFormaPagamentoID);
-    List<ConsultaModel> findByConvenioID(int pConvenioID);
-    List<ConsultaModel> findByRecepcionistaID(int pRecepcionistaID);
+    List<ConsultaModel> findByPaciente(PacienteModel pPaciente);
+    List<ConsultaModel> findByMedico(MedicoModel pMedico);
+    List<ConsultaModel> findByFormaPagamento(FormaPagamentoModel pFormaPagamentoID);
+    List<ConsultaModel> findByConvenio(ConvenioModel pConvenio);
+    List<ConsultaModel> findByRecepcionista(RecepcionistaModel pRecepcionista);
 
     @Query(value = "SELECT " +
-            "c.dataHoraConsulta AS dataHora ," +
-            "m.nome AS medico," +
-            "e.nome AS especialidade, " +
+            "c.dataHoraConsulta ," +
+            "m.nome ," +
+            "e.nome , " +
             "c.valor, " +
             "c.status, " +
             "c.observacoes  " +
@@ -60,8 +60,8 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
             COUNT(c)
             )
             FROM ConsultaModel c
-            JOIN MedicoModel m ON c.medicoID = m.id
-            JOIN EspecialidadeModel e ON m.especialidadeID = e.id
+            JOIN c.medico m
+            JOIN m.especialidade e
             WHERE
                 c.status = 'REALIZADA' AND
                 c.dataHoraConsulta >= :dataInicio AND
@@ -82,9 +82,9 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
             SUM(c.valor)
             )
             FROM ConsultaModel c
-            JOIN FormaPagamentoModel f ON c.formaPagamentoID = f.id
+            JOIN c.formaPagamento f
             WHERE c.status = 'REALIZADA'
-            AND c.formaPagamentoID IS NOT NULL
+            AND c.formaPagamento IS NOT NULL
             AND c.dataHoraConsulta BETWEEN :dataInicio AND :dataFim
             GROUP BY f.descricao
             """)
@@ -99,9 +99,9 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
             SUM(c.valor)
             )
             FROM ConsultaModel c
-            JOIN ConvenioModel co ON c.convenioID = co.id
+            JOIN c.convenio co
             WHERE c.status = 'REALIZADA'
-            AND c.convenioID IS NOT NULL
+            AND c.convenio IS NOT NULL
             AND c.dataHoraConsulta BETWEEN :dataInicio AND :dataFim
             GROUP BY co.nome
             """)
@@ -120,7 +120,7 @@ public interface ConsultaRepository extends JpaRepository<ConsultaModel, Long> {
     );
     @Query("SELECT NEW br.com.smartmed.consultas.rest.dto.RankingMedicosResponse(m.nome, COUNT(c)) " +
             "FROM ConsultaModel c " +
-            "JOIN MedicoModel m ON c.medicoID = m.id " +
+            "JOIN c.medico m " +
             "WHERE c.status = 'REALIZADA' " +
             "AND MONTH(c.dataHoraConsulta) = :mes " +
             "AND YEAR(c.dataHoraConsulta) = :ano " +

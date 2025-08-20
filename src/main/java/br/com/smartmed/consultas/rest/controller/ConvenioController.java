@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/convenio")
+@RequestMapping("api/convenios")
 public class ConvenioController {
     @Autowired
     private ConvenioService convenioService;

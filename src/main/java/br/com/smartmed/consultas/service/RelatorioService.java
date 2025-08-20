@@ -47,7 +47,6 @@ public class RelatorioService {
 
     }
     public List<RankingMedicosResponse> gerarRelatorioRankingMedicos(RankingMedicosRequest request) {
-        List<RankingMedicosResponse> response = consultaRepository.findMedicosMaisAtivos(request.getMes(), request.getAno());
-        return response;
+        return consultaRepository.findMedicosMaisAtivos(request.getMes(), request.getAno());
     }
 }

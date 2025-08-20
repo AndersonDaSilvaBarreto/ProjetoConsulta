@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 public class AgendarConsultaResponse {
     private long consultaID;
     private LocalDateTime dataHoraConsulta;
-    private int medicoID;
-    private int pacienteID;
+    private String medico;
+    private String paciente;
     private BigDecimal valorConsulta;
     private String status;
 }

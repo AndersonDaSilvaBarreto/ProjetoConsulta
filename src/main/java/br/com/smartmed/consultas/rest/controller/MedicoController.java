@@ -1,7 +1,9 @@
 package br.com.smartmed.consultas.rest.controller;
 
 import br.com.smartmed.consultas.model.MedicoModel;
+import br.com.smartmed.consultas.rest.dto.MedicoCadastroRequest;
 import br.com.smartmed.consultas.rest.dto.MedicoDTO;
+import br.com.smartmed.consultas.rest.dto.MedicoDeleteRequest;
 import br.com.smartmed.consultas.service.MedicoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/medico")
+@RequestMapping("api/medicos")
 public class MedicoController {
     @Autowired
     private MedicoService medicoService;
@@ -28,17 +30,17 @@ public class MedicoController {
         return ResponseEntity.ok(medicoDTOList);
     }
     @PostMapping()
-    public ResponseEntity<MedicoDTO> salvar(@Valid @RequestBody MedicoModel novoMedico) {
+    public ResponseEntity<MedicoDTO> salvar(@Valid @RequestBody MedicoCadastroRequest novoMedico) {
         MedicoDTO novoMedicoDTO = medicoService.salvar(novoMedico);
         return  ResponseEntity.status(HttpStatus.CREATED).body(novoMedicoDTO);
     }
     @PutMapping
-    public ResponseEntity<MedicoDTO> atualizar(@Valid @RequestBody MedicoModel medicoExistente) {
+    public ResponseEntity<MedicoDTO> atualizar(@Valid @RequestBody MedicoCadastroRequest medicoExistente) {
         MedicoDTO medicoExistenteDTO = medicoService.atualizar(medicoExistente);
         return ResponseEntity.status(HttpStatus.OK).body(medicoExistenteDTO);
     }
     @DeleteMapping
-    public void deletar(@Valid @RequestBody MedicoModel medicoExistente) {
+    public void deletar(@Valid @RequestBody MedicoDeleteRequest medicoExistente) {
         medicoService.deletar(medicoExistente);
     }
 

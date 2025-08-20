@@ -20,13 +20,12 @@ public class ConsultaModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private long id;
+    private Long id;
 
     @Column(name = "dataHoraConsulta", nullable = false)
     private LocalDateTime dataHoraConsulta;
 
     @Column(name = "status",length = 16,nullable = false)
-    @NotNull(message = "O status não pode ser nulo.")
     @NotBlank(message = "O status é obrigatório!")
     private String status;
 
@@ -37,22 +36,25 @@ public class ConsultaModel {
     @Column(name = "observacoes",length = 1024,nullable = true)
     private String observacoes;
 
-    @Column(name = "pacienteID",nullable = false)
-    @NotNull(message = "O identificador único de paciente não pode ser nulo!")
-    private int pacienteID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pacienteID", nullable = false)
+    private PacienteModel paciente;
 
-    @Column(name = "medicoID", nullable = false)
-    @NotNull(message = "O identificador de médico não pode ser nulo!")
-    private int medicoID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "medicoID", nullable = false)
+    private MedicoModel medico;
 
-    @Column(name = "formaPagamentoID", nullable = true)
-    private Integer formaPagamentoID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "formaPagamentoID", nullable = true)
+    private FormaPagamentoModel formaPagamento;
 
-    @Column(name = "convenioID", nullable = true)
-    private Integer convenioID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "convenioID", nullable = true)
+    private ConvenioModel convenio;
 
-    @Column(name = "recepcionistaID", nullable = true)
-    private Integer recepcionistaID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recepcionistaID", nullable = true)
+    private RecepcionistaModel recepcionista;
 
     /*
     public ConsultaDTO toDTO() {

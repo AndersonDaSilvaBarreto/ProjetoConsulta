@@ -2,10 +2,9 @@ package br.com.smartmed.consultas.service;
 
 import br.com.smartmed.consultas.exception.*;
 import br.com.smartmed.consultas.model.ConsultaModel;
+import br.com.smartmed.consultas.model.EspecialidadeModel;
 import br.com.smartmed.consultas.model.MedicoModel;
-import br.com.smartmed.consultas.repository.ConsultaRepository;
-import br.com.smartmed.consultas.repository.MedicoRepository;
-import br.com.smartmed.consultas.repository.RecepcionistaRepository;
+import br.com.smartmed.consultas.repository.*;
 import br.com.smartmed.consultas.rest.dto.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,16 @@ public class ConsultaService {
     @Autowired
     private ConsultaRepository consultaRepository;
     @Autowired
+    private PacienteRepository pacienteRepository;
+    @Autowired
     private MedicoRepository medicoRepository;
+
+    @Autowired
+    private EspecialidadeRepository especialidadeRepository;
+    @Autowired
+    private FormaPagamentoRepository formaPagamentoRepository;
+    @Autowired
+    private ConvenioRepository convenioRepository;
     @Autowired
     private AgendaService agendaService;
     @Autowired
@@ -46,30 +54,69 @@ public class ConsultaService {
     }
 
     @Transactional
+    public ConsultaDTO salvar( ConsultaDTO request) {
+        ConsultaModel novaConsulta = new ConsultaModel();
+        if(request.getId() != null) novaConsulta.setId(request.getId());
+        novaConsulta.setDataHoraConsulta(request.getDataHoraConsulta());
+        novaConsulta.setStatus(request.getStatus());
+        novaConsulta.setValor(request.getValor());
+        novaConsulta.setObservacoes(request.getObservacoes());
 
-    public ConsultaDTO salvar(ConsultaModel novaConsulta) {
+        novaConsulta.setPaciente(pacienteRepository.findById(request.getPacienteID())
+                .orElseThrow(() -> new BusinessRuleException("Paciente não encontrado") ));
+        novaConsulta.setMedico(medicoRepository.findById(request.getMedicoID())
+                .orElseThrow(() -> new BusinessRuleException("Medico não encontrado") ));
+        if (request.getFormaPagamentoID() != null) {
+            novaConsulta.setFormaPagamento(formaPagamentoRepository.findById(request.getFormaPagamentoID())
+                    .orElseThrow(() -> new RuntimeException("Forma de pagamento não encontrada")));
+        }
+        if (request.getConvenioID() != null) {
+            novaConsulta.setConvenio(convenioRepository.findById(request.getConvenioID())
+                    .orElseThrow(() -> new RuntimeException("Convênio não encontrado")));
+        }
+
+        if (request.getRecepcionistaID() != null) {
+            novaConsulta.setRecepcionista(recepcionistaRepository.findById(request.getRecepcionistaID())
+                    .orElseThrow(() -> new RuntimeException("Recepcionista não encontrado")));
+        }
+
         try {
-            if(consultaRepository.existsById(novaConsulta.getId())) {
-                throw new ConstraintException("Já existe uma consulta com esse ID " + novaConsulta.getId() + " na base de dados!");
+            if (novaConsulta.getId() != null && consultaRepository.existsById(novaConsulta.getId())) {
+                throw new ConstraintException(
+                        "Já existe uma consulta com esse ID " + novaConsulta.getId() + " na base de dados!"
+                );
             }
+
+
             return modelMapper.map(consultaRepository.save(novaConsulta), ConsultaDTO.class);
         } catch (DataIntegrityException e) {
-            throw new DataIntegrityException("Erro! Não foi possível salvar a consulta " + novaConsulta.getId() + " !");
+            throw new DataIntegrityException(
+                    "Erro! Não foi possível salvar a consulta " + novaConsulta.getId() + " !"
+            );
         } catch (ConstraintException e) {
-            // Relança a mensagem original ou adiciona contexto
             if (e.getMessage() == null || e.getMessage().isBlank()) {
-                throw new ConstraintException("Erro de restrição de integridade ao salvar a consulta " + novaConsulta.getId() + ".");
+                throw new ConstraintException(
+                        "Erro de restrição de integridade ao salvar a consulta " + novaConsulta.getId() + "."
+                );
             }
             throw e;
         } catch (BusinessRuleException e) {
-            throw new BusinessRuleException("Erro! Não foi possível salvar a consulta " + novaConsulta.getId() + ". Violação de regra de negócio!");
+            throw new BusinessRuleException(
+                    "Erro! Não foi possível salvar a consulta " + novaConsulta.getId() + ". Violação de regra de negócio!"
+            );
         } catch (SQLException e) {
-            throw new SQLException("Erro! Não foi possível salvar a consulta " + novaConsulta.getId() + ". Falha na conexão com o banco de dados!");
+            throw new SQLException(
+                    "Erro! Não foi possível salvar a consulta " + novaConsulta.getId() + ". Falha na conexão com o banco de dados!"
+            );
         }
     }
 
     @Transactional
-    public ConsultaDTO atualizar(ConsultaModel consultaExistente) {
+    public ConsultaDTO atualizar(ConsultaDTO request) {
+
+        if(request.getId() == null) throw new BusinessRuleException("O da consulta é obrigatório!");
+        ConsultaModel consultaExistente = consultaRepository.findById(request.getId()).orElseThrow(() -> new BusinessRuleException("Não há nenhuma consulta com esse id!"));
+
         try {
             if(!consultaRepository.existsById(consultaExistente.getId())) {
                 throw new ConstraintException("A consulta com esse ID " + consultaExistente.getId() + " não existe na base de dados!");
@@ -111,7 +158,7 @@ public class ConsultaService {
         } catch (BusinessRuleException e) {
             throw new BusinessRuleException("Erro! Não foi possível deletar a consulta " + consultaExistente.getId() + ". Violação de regra de negócio!");
         } catch (SQLException e) {
-            throw new SQLException("Erro! Não foi possível atualizar a deletar " + consultaExistente.getId() + ". Falha na conexão com o banco de dados!");
+            throw new SQLException("Erro! Não foi possível deletar " + consultaExistente.getId() + ". Falha na conexão com o banco de dados!");
         } catch (ObjectNotFoundException e) {
             throw new ObjectNotFoundException("Erro! Não foi possível deletar a consulta" + consultaExistente.getId() + ". Não encontrado no banco de dados!");
         }
@@ -127,18 +174,18 @@ public class ConsultaService {
     public ConsultaCancelamentoResponse cancelar(ConsultaCancelamentoRequest request) {
 
         if (request.getMotivo() == null || request.getMotivo().isBlank()) {
-            throw new IllegalArgumentException("O motivo do cancelamento é obrigatório.");
+            throw new BusinessRuleException("O motivo do cancelamento é obrigatório.");
         }
 
         ConsultaModel consulta = consultaRepository.findById(request.getConsultaID())
-                .orElseThrow(() -> new RuntimeException("Consulta com ID " + request.getConsultaID() + " não encontrada."));
+                .orElseThrow(() -> new BusinessRuleException("Consulta com ID " + request.getConsultaID() + " não encontrada."));
 
         if (!"AGENDADA".equalsIgnoreCase(consulta.getStatus())) {
-            throw new RuntimeException("Apenas consultas com status 'AGENDADA' podem ser canceladas.");
+            throw new BusinessRuleException("Apenas consultas com status 'AGENDADA' podem ser canceladas.");
         }
 
         if (consulta.getDataHoraConsulta().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Não é possível cancelar uma consulta que já ocorreu.");
+            throw new BusinessRuleException("Não é possível cancelar uma consulta que já ocorreu.");
         }
 
         consultaRepository.cancelamentoConsulta(consulta.getId(), request.getMotivo());
@@ -154,9 +201,9 @@ public class ConsultaService {
         if (request.getConvenioID() == null && request.getFormaPagamentoID() == null) {
             throw new IllegalArgumentException("Informe um convênio ou uma forma de pagamento.");
         }
-
+        EspecialidadeModel especialidade = especialidadeRepository.findById(request.getEspecialidadeID()).orElseThrow(() -> new BusinessRuleException("Especialidade é obrigatório!"));
         List<MedicoModel> medicos = request.getEspecialidadeID() != null
-                ? medicoRepository.findByEspecialidadeID(request.getEspecialidadeID())
+                ? medicoRepository.findByEspecialidade(especialidade)
                 : medicoRepository.findAll();
 
         for (MedicoModel medico : medicos) {
@@ -169,7 +216,7 @@ public class ConsultaService {
 
                 if (tentativa.isBefore(request.getDataHoraInicial())) continue;
 
-                boolean marcado = medico.marcarConsulta(data, hora, 30);
+                boolean marcado = agendaService.marcarConsulta(medico, data, hora, 30);
 
                 if (marcado) {
                     BigDecimal valorConsulta = medico.getValorConsultaReferencia();
@@ -182,19 +229,26 @@ public class ConsultaService {
                     consulta.setStatus("AGENDADA");
                     consulta.setValor(valorConsulta);
                     consulta.setObservacoes(null);
-                    consulta.setPacienteID(request.getPacienteID());
-                    consulta.setMedicoID(medico.getId());
-                    consulta.setFormaPagamentoID(request.getFormaPagamentoID() != null ? request.getFormaPagamentoID() : 0);
-                    consulta.setConvenioID(request.getConvenioID() != null ? request.getConvenioID() : 0);
-                    consulta.setRecepcionistaID(null);
+                    consulta.setPaciente(pacienteRepository.findById(request.getPacienteID())
+                            .orElseThrow(() -> new BusinessRuleException("Paciente não encontrado") ));
+                    if (request.getFormaPagamentoID() != null) {
+                        consulta.setFormaPagamento(formaPagamentoRepository.findById(request.getFormaPagamentoID())
+                                .orElseThrow(() -> new RuntimeException("Forma de pagamento não encontrada")));
+                    }
+                    if (request.getConvenioID() != null) {
+                        consulta.setConvenio(convenioRepository.findById(request.getConvenioID())
+                                .orElseThrow(() -> new RuntimeException("Convênio não encontrado")));
+                    }
+
+
 
                     consultaRepository.save(consulta);
 
                     return new AgendarConsultaResponse(
                             consulta.getId(),
                             consulta.getDataHoraConsulta(),
-                            consulta.getMedicoID(),
-                            consulta.getPacienteID(),
+                            consulta.getMedico().getNome(),
+                            consulta.getPaciente().getNome(),
                             consulta.getValor(),
                             consulta.getStatus()
                     );
@@ -217,18 +271,26 @@ public class ConsultaService {
         //
 
         //Verifica se médico tem horário disponível
-        MedicoModel medico = medicoRepository.findById(consultaParaCancelar.getMedicoID())
-                .orElseThrow(() -> new RuntimeException("Medico(a) não encontrado(a)") );
+        MedicoModel medico = medicoRepository.findById(consultaParaCancelar.getMedico().getId())
+                .orElseThrow(() -> new BusinessRuleException("Medico(a) não encontrado(a)") );
         LocalDate novaData = request.getNovaDataHora().toLocalDate();
         LocalTime novoHorario = request.getNovaDataHora().toLocalTime();
 
-        boolean disponivel = medico.marcarConsulta(novaData, novoHorario, 30);
+        boolean disponivel = agendaService.marcarConsulta(medico ,novaData, novoHorario, 30);
         if(!disponivel) {
             throw new RuntimeException("O médico não tem disponibilidade nesta nova data e horario");
         }
         //--
         consultaRepository.cancelamentoConsulta(request.getConsultaID(), request.getMotivo());
-        ConsultaModel novaConsulta = getConsultaModel(request, consultaParaCancelar);
+        ConsultaModel novaConsulta = new ConsultaModel();
+        novaConsulta.setPaciente(consultaParaCancelar.getPaciente());
+        novaConsulta.setMedico(consultaParaCancelar.getMedico());
+        novaConsulta.setRecepcionista(consultaParaCancelar.getRecepcionista());
+        novaConsulta.setValor(consultaParaCancelar.getValor());
+        novaConsulta.setDataHoraConsulta(request.getNovaDataHora());
+        novaConsulta.setFormaPagamento(consultaParaCancelar.getFormaPagamento());
+        novaConsulta.setConvenio(consultaParaCancelar.getConvenio());
+        novaConsulta.setObservacoes("Consulta remarcada por motivo de " + request.getMotivo());
         consultaRepository.save(novaConsulta);
 
         ReagendamentoDeConsultaResponse response = new ReagendamentoDeConsultaResponse();
@@ -236,26 +298,13 @@ public class ConsultaService {
         response.setNovaDataHora(novaConsulta.getDataHoraConsulta());
 
         consultaParaCancelar.setObservacoes("Consulta reagendada para a data e horário " + request.getNovaDataHora());
-        atualizar(consultaParaCancelar);
+        atualizar(modelMapper.map(consultaParaCancelar, ConsultaDTO.class));
         return response;
 
 
     }
 
-    private static ConsultaModel getConsultaModel(
-            ReagendamentoDeConsultaRequest request, ConsultaModel consultaParaCancelar) {
-        ConsultaModel novaConsulta = new ConsultaModel();
-        novaConsulta.setPacienteID(consultaParaCancelar.getPacienteID());
-        novaConsulta.setMedicoID(consultaParaCancelar.getMedicoID());
-        novaConsulta.setRecepcionistaID(consultaParaCancelar.getRecepcionistaID());
-        novaConsulta.setValor(consultaParaCancelar.getValor());
-        novaConsulta.setStatus("AGENDADA");
-        novaConsulta.setDataHoraConsulta(request.getNovaDataHora());
-        novaConsulta.setFormaPagamentoID(consultaParaCancelar.getFormaPagamentoID());
-        novaConsulta.setConvenioID(consultaParaCancelar.getConvenioID());
-        novaConsulta.setObservacoes("Consulta remarcada por motivo de " + request.getMotivo());
-        return novaConsulta;
-    }
+
 
     @Transactional
     public CadastrarConsultaRecepcionistaResponse cadastrarConsultaPorRecepcionista(
@@ -273,7 +322,7 @@ public class ConsultaService {
 
         LocalDate data = request.getDataHora().toLocalDate();
         LocalTime hora = request.getDataHora().toLocalTime();
-        boolean disponivel = medico.marcarConsulta(data,hora, request.getDuracaoMinutos());
+        boolean disponivel = agendaService.marcarConsulta(medico,data, hora, request.getDuracaoMinutos());
         if(!disponivel) {
             throw new RuntimeException("O médico não tem disponibilidade nesta nova data e horario");
         }
@@ -283,11 +332,23 @@ public class ConsultaService {
 
         ConsultaModel novaConsulta = new ConsultaModel();
         novaConsulta.setDataHoraConsulta(request.getDataHora());
-        novaConsulta.setPacienteID(request.getPacienteID());
-        novaConsulta.setMedicoID(request.getMedicoID());
-        novaConsulta.setConvenioID(request.getConvenioID());
-        novaConsulta.setFormaPagamentoID(request.getFormaPagamentoID());
-        novaConsulta.setRecepcionistaID(request.getRecepcionistaID());
+        novaConsulta.setPaciente(pacienteRepository.findById(request.getPacienteID())
+                .orElseThrow(() -> new BusinessRuleException("Paciente não encontrado") ));
+        novaConsulta.setMedico(medicoRepository.findById(request.getMedicoID())
+                .orElseThrow(() -> new BusinessRuleException("Medico não encontrado") ));
+        if (request.getFormaPagamentoID() != null) {
+            novaConsulta.setFormaPagamento(formaPagamentoRepository.findById(request.getFormaPagamentoID())
+                    .orElseThrow(() -> new RuntimeException("Forma de pagamento não encontrada")));
+        }
+        if (request.getConvenioID() != null) {
+            novaConsulta.setConvenio(convenioRepository.findById(request.getConvenioID())
+                    .orElseThrow(() -> new RuntimeException("Convênio não encontrado")));
+        }
+
+        if (request.getRecepcionistaID() != null) {
+            novaConsulta.setRecepcionista(recepcionistaRepository.findById(request.getRecepcionistaID())
+                    .orElseThrow(() -> new RuntimeException("Recepcionista não encontrado")));
+        }
         novaConsulta.setStatus("AGENDADA");
         if(request.getConvenioID() != null) {
             novaConsulta.setValor(

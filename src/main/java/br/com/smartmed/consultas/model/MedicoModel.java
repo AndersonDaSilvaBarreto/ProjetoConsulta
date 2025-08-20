@@ -11,13 +11,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -58,9 +54,16 @@ public class MedicoModel {
     @Column(name = "ativo",nullable = false)
     private boolean ativo;
 
-    @Column(name = "especialidadeID", nullable = false)
-    private int especialidadeID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "especialidadeID", nullable = false)
+    private EspecialidadeModel especialidade;
 
+    @OneToMany(mappedBy = "medico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<AgendaModel> agendas = new ArrayList<>();
+
+
+
+    /*
     @Transient
     private Map<String, List<String>> agenda = new HashMap<>();
 
@@ -92,7 +95,7 @@ public class MedicoModel {
     }
 
 
-    /*
+
     public MedicoDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, MedicoDTO.class);

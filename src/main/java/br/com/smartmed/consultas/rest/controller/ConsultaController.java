@@ -28,12 +28,12 @@ public class ConsultaController {
         return ResponseEntity.ok(consultaDTOList);
     }
     @PostMapping()
-    public ResponseEntity<ConsultaDTO> salvar(@Valid @RequestBody ConsultaModel novaConsulta) {
+    public ResponseEntity<ConsultaDTO> salvar(@Valid @RequestBody ConsultaDTO novaConsulta) {
         ConsultaDTO novaConsultaDTO = consultaService.salvar(novaConsulta);
         return  ResponseEntity.status(HttpStatus.CREATED).body(novaConsultaDTO);
     }
     @PutMapping
-    public ResponseEntity<ConsultaDTO> atualizar(@Valid @RequestBody ConsultaModel consultaExistente) {
+    public ResponseEntity<ConsultaDTO> atualizar(@Valid @RequestBody ConsultaDTO consultaExistente) {
         ConsultaDTO consultaExistenteDTO = consultaService.atualizar(consultaExistente);
         return ResponseEntity.status(HttpStatus.OK).body(consultaExistenteDTO);
     }
