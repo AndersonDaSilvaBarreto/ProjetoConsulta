@@ -3,6 +3,7 @@ package br.com.smartmed.consultas.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,6 +32,7 @@ public class ConsultaModel {
 
     @Column(name = "valor",nullable = false)
     @NotNull(message = "O valor não poder ser nulo")
+    @Positive
     private BigDecimal valor;
 
     @Column(name = "observacoes",length = 1024,nullable = true)

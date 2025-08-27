@@ -44,7 +44,7 @@ public class MedicoModel {
     @NotBlank(message = "O telefone é obrigatório.")
     private String telefone;
 
-    @Column(name = "email", length = 64, nullable = true)
+    @Column(name = "email", length = 64, nullable = true, unique = true)
     @Email(message = "E-mail invalido")
     private String email;
 
@@ -64,38 +64,6 @@ public class MedicoModel {
 
 
     /*
-    @Transient
-    private Map<String, List<String>> agenda = new HashMap<>();
-
-    public boolean marcarConsulta(LocalDate data, LocalTime horaInicio, int duracaoMinutos) {
-        // Converter data para string no formato yyyy-MM-dd para usar como chave
-        String dataStr = data.toString();
-        List<String> horariosOcupados = agenda.getOrDefault(dataStr, new ArrayList<>());
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        LocalTime horaFim = horaInicio.plusMinutes(duracaoMinutos);
-
-        // Verificar conflitos de horários já ocupados
-        for (String h : horariosOcupados) {
-            LocalTime ocupado = LocalTime.parse(h, formatter);
-            if (!ocupado.isBefore(horaInicio) && ocupado.isBefore(horaFim)) {
-                return false; // conflito encontrado
-            }
-        }
-
-        // Adicionar blocos de 10 minutos na agenda
-        LocalTime temp = horaInicio;
-        while (!temp.isAfter(horaFim.minusMinutes(1))) {
-            horariosOcupados.add(temp.format(formatter));
-            temp = temp.plusMinutes(10);
-        }
-
-        agenda.put(dataStr, horariosOcupados);
-        return true;
-    }
-
-
-
     public MedicoDTO toDTO() {
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(this, MedicoDTO.class);

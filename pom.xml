@@ -68,6 +68,11 @@
 			<version>6.4.4</version> <!-- ou a versão mais recente compatível com seu Spring Boot -->
 		</dependency>
 
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>mssql-jdbc</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
 	</dependencies>
 
