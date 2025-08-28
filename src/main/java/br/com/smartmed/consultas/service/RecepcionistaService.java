@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -108,7 +109,19 @@ public class RecepcionistaService {
     @Transactional(readOnly = true)
     public PaginacaoRespostaDTO<RecepcionistaDTO> buscarComFiltros(RecepcionistaRequestFiltros filtro) {
 
-        Pageable pageable = PageRequest.of(filtro.getPagina(), filtro.getTamanhoPagina());
+        Sort.Direction direction = Sort.Direction.ASC;
+
+        if(filtro.getDirecao() != null) {
+            direction = Sort.Direction.fromString(filtro.getDirecao());
+        }
+
+        String ordenarPor = filtro.getOrdenarPor() != null ? filtro.getOrdenarPor() : "nome";
+
+        Pageable pageable = PageRequest.of(
+                filtro.getPagina(),
+                filtro.getTamanhoPagina(),
+                Sort.by(direction, ordenarPor)
+        );
 
 
         Boolean statusBooleano = null;
@@ -130,8 +143,9 @@ public class RecepcionistaService {
         
         return new PaginacaoRespostaDTO<>(
                 paginaDeDTOs.getContent(),
+                paginaDeDTOs.getNumber(),
                 paginaDeDTOs.getTotalPages(),
-                paginaDeDTOs.getNumber()
+                paginaDeDTOs.getTotalElements()
         );
 
 }

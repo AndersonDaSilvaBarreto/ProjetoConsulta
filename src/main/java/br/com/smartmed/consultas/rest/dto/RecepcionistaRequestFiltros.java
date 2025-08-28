@@ -24,4 +24,8 @@ public class RecepcionistaRequestFiltros {
     @NotNull
     private int tamanhoPagina;
 
+    private String ordenarPor;
+
+    private String direcao;
+
 }

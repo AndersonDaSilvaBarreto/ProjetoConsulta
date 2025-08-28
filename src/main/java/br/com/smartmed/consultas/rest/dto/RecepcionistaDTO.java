@@ -1,5 +1,6 @@
 package br.com.smartmed.consultas.rest.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,8 +10,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecepcionistaDTO {
-    private int id;
+    private Integer id;
     private String nome;
     private String cpf;
     private LocalDate dataNascimento;
@@ -18,7 +20,7 @@ public class RecepcionistaDTO {
     private LocalDate dataDemissao;
     private String telefone;
     private String email;
-    private boolean ativo;
+    private Boolean ativo;
 
     public RecepcionistaDTO(String nome, String cpf, String email, LocalDate dataAdmissao, boolean ativo) {
         this.nome = nome;
